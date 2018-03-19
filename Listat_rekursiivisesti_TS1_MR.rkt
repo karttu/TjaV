@@ -8,7 +8,7 @@
 ;; annettuihin neljään tehtävään.
 ;;
 ;;
-;; Malliratkaisut kirjoitti Antti Karttunen, 11. maaliskuuta 2018. 
+;; Malliratkaisut kirjoitti Antti Karttunen, 11.- maaliskuuta 2018. 
 ;; Julkaistu lisenssillä CC BY-NC-SA 4.0:
 ;; https://creativecommons.org/licenses/by-nc-sa/4.0/
 ;; (Creative Commons Nimeä-EiKaupallinen-JaaSamoin 4.0 Kansainvälinen Lisenssi).
@@ -92,18 +92,6 @@
 (check-expect (eka-tuplattu (list 1 2 5 4 4 5 3 2)) 4)
 
 
-;; Huomaa vielä tämä:
-(check-expect (eka-tuplattu (list 1 2 #false 5)) #false)
-
-(check-expect (eka-tuplattu (list 1 2 #false #false 5 5 6 1)) #false)
-
-;; Toisin sanoen, funktiossamme on on se perustavaa laatua oleva valuvika,
-;; että mikäli ensimmäinen toistuva alkio on #false, niin funktion tuloksesta
-;; sitä ei voi mitenkään päätellä.
-;; Kysymys: Miten asian voisi korjata? Vihje: Muistele mitä funktio member täydessä
-;; Racket-kielessä ja Weschemessä palauttaa kun etsitty alkio löytyy? 
-;;
-
 
 ;; Harjoitus 3:
 ;; Ylläolevista esimerkeistä mallia ottaen, kirjoita rekursiivinen funktio
@@ -154,8 +142,8 @@
 ;; kerran listassa.
 ;; Tämä funktio eroaa funktiosta eka-tuplattu paitsi paluuarvonsa osalta, niin myös siinä
 ;; että toistuvien alkioiden ei tarvitse olla peräkkäin.
-;; Vihje: funktiota member (tai ylläannettua elekja-funktiota) voi käyttää myös
-;; toisen rekursiivisen funktion sisällä.
+;; Vihje: funktiota member voi käyttää myös toisen rekursiivisen funktion sisällä.
+;;
 
 ;; Malliratkaisu:
 
@@ -163,17 +151,26 @@
    (cond ((empty? lista) #false) ;; Jos tultiin jo listan loppuun, ...
          ((empty? (rest lista)) #false) ;; ... tai enää yksi alkio jäljellä...
          ;; silloin yhtään tuplattua alkiota ei löytynyt, palauta #false
-         ((not (equal? #false (member (first lista) (rest lista))))
-        ;; Jos tässä kohdin listaa on ekana alkiona sellainen alkio joka löytyy
-        ;; listan hännästäkin, olemme löytäneet silloin ensimmäisen alkion
-        ;; joka esiintyy listassa useasti.
-                #true                  ;; Joten palauta tosi
-         )
+         ((member (first lista) (rest lista)) #true)
+        ;; Tässä ^ tarkistamme member-funktiolla, että mikäli tässä kohdin listaa on
+        ;; ekana alkiona sellainen alkio joka löytyy listan hännästäkin, olemme löytäneet
+        ;; silloin ensimmäisen alkion joka esiintyy listassa useasti.
+        ;; Joten palauta tosi merkiksi siitä että duplikaatteja löytyi.
+
          (else (onko-duplikaatteja? (rest lista))) ;; Muuten jatka etsimistä hännästä
    )
 )
 
-
+;;
+;; Huom! WeScheme:ssä kolmas ehtolauseke on kirjoitettava joko muodossa:
+;;         (list? (member (first lista) (rest lista)))
+;;  tai:
+;;         ((not (equal? #false (member (first lista) (rest lista))))
+;; mikä toimii sekä WeSchemessä että myös Racket:in Advanced Student -tasolla,
+;; koska WeScheme:ssä member-funktio alkion löytyessä ei palauta #true:ta
+;; vaan ensimmäisen kohdan listasta jossa ko. alkio on.
+;; 
+;;
 
 (check-expect (onko-duplikaatteja? (list)) #false)
 

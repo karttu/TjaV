@@ -7,33 +7,60 @@
 ;; annettuihin neljään tehtävään.
 ;;
 ;;
-;; Malliratkaisut kirjoitti Antti Karttunen, 11. maaliskuuta 2018. 
+;; Malliratkaisut kirjoitti Antti Karttunen, 11. & 19. maaliskuuta 2018. 
 ;; Julkaistu lisenssillä CC BY-NC-SA 4.0:
 ;; https://creativecommons.org/licenses/by-nc-sa/4.0/
 ;; (Creative Commons Nimeä-EiKaupallinen-JaaSamoin 4.0 Kansainvälinen Lisenssi).
 ;;
 
-
+;;
 ;; Seuraavissa tehtävissä harjoitellaan edelleen häntärekursiota.
 ;; Kaikille on ominaista, että varsinainen käyttäjän kutsuma funktio
 ;; kutsuu erillistä apufunktiota, jossa on mukana yksi "ylimääräinen"
-;; tulos-argumentti, joka "alustetaan" ensin esimerkiksi nollaksi
-;; tai tyhjäksi listaksi.
-
+;; argumentti (näissä esimerkeissä nimeltään tulos), joka tuossa kutsussa
+;; "alustetaan" ensin esimerkiksi nollaksi tai tyhjäksi listaksi, ja johon tulos
+;; sitten kierros kierrokselta "kasvaa", "kerääntyy" tai "kumuloituu" (engl. accumulates).
+;;
+;; Jos tulos on tyypiltään luku, niin silloin sen kasvattaminen tapahtuu
+;; esimerkiksi plus tai kertolaskufunktion (+ tai *) avulla, ja jos se on
+;; tyypiltään lista, silloin sitä useimmiten kasvatetaan cons-funktiolla,
+;; joka lisää listan alkuun uuden alkion.
+;;
 
 ;; Tehtävä 1: Kirjoita rekursiivinen funktio, joka saa argumenttina
 ;; kokonaislukuja sisältävän listan, ja palauttaa listan lukujen tulon.
 
 ;; Malliratkaisu:
 
+;; Huom: tässä tulos alustetaan nollan sijasta ykköseksi, sillä matematiikassa
+;; vakiintunut käytäntö on, että vaikka tyhjän joukon summa on nolla,
+;; niin tyhjän joukon tulo on yksi, mikä sopimus tekee myös tämän
+;; ohjelmoimisesta paljon yksinkertaisempaa, koska ensimmäisessä
+;; funktiossa ei silloin erikseen tarvitse tarkistella onko argumenttina
+;; annettu luvut-lista tyhjä vai ei.
+
 (define (lukujen-tulo luvut) (lukujen-tulo_apu luvut 1))
 
 (define (lukujen-tulo_apu luvut tulos)
-  (if (empty? luvut)
-      tulos
-      (lukujen-tulo_apu (rest luvut) (* (first luvut) tulos))
+  (if (empty? luvut)     ;; Onko kaikki luvut "syöty" jo?
+      tulos              ;; Jos on, niin palauta tulos-apumuuttujaan laskettu lukujen tulo.
+      (lukujen-tulo_apu  ;; Muussa tapauksessa, listassa on lukuja jäljellä vielä, joten "kutsu itseä" eli palaa alkuun,
+               (rest luvut) ;; siten että luvut-listan alusta poistetaan ensimmäinen luku,
+               (* (first luvut) tulos) ;; jolla kerrotaan tähän asti saatu tulos, joka tulee tulos-muuttujan uudeksi arvoksi.
+      )
   )
 )
+
+(check-expect (lukujen-tulo (list 1 2 3 4 5 6 7)) 5040)
+
+(check-expect (lukujen-tulo (list 77)) 77)
+
+(check-expect (lukujen-tulo (list 3 3 3 3 3 3)) 729)
+
+(check-expect (lukujen-tulo (list -1 -1 -1 -1)) 1)
+
+(check-expect (lukujen-tulo (list)) 1)
+
 
 
 ;; Tehtävä 2: Kirjoita rekursiivinen funktio, joka saa argumenttina
@@ -41,18 +68,20 @@
 
 ;; Malliratkaisu:
 
-(define (luvut-yhdestä-ännään n) (luvut-yhdestä-ännään_apu (list) n))
+;; Huomaa kuinka tässä apufunktion luvut-yhdestä-ännään_apu apumuuttuja tulos
+;; alustetaan tyhjäksi listaksi, mikä saadaan esimerkiksi kutsumalla list-funktiota
+;; ilman argumentteja, siis (list):
 
-;; Tarvitsee apufunktiota, jossa rakennettava luvut-lista kulkee silmukassa mukana
-;; toisena argumenttina. (Ekan kerran kutsuttaessa luvut on alustettu tyhjäksi listaksi).
+(define (luvut-yhdestä-ännään n) (luvut-yhdestä-ännään_apu n (list)))
 
-(define (luvut-yhdestä-ännään_apu tulos n)
+
+(define (luvut-yhdestä-ännään_apu n tulos)
   (if (zero? n) ;; Jos n tuli nollaksi...
       tulos     ;; Niin palauta rakennettu tuloslista. Tässä tapauksessa on valmiiksi
                 ;; juuri niinpäin kuin halutaan, joten ei tarvita reverse-funktiota.
 ;; Muussa tapauksessa vähennä n:ää yhdellä ja lisää tämänhetkinen n rakennettavan
 ;; luvut-listan alkuun, ja palaa silmukan alkuun.
-      (luvut-yhdestä-ännään_apu (cons n tulos) (- n 1))
+      (luvut-yhdestä-ännään_apu (- n 1) (cons n tulos))
   )
 )
 
@@ -67,36 +96,19 @@
 
 (check-expect (length (luvut-yhdestä-ännään 123)) 123)
 
-;; Lisämietintä: Mitä tekee seuraava funktio: ?
-(define (mikämikä n) (lukujen-tulo (luvut-yhdestä-ännään n)))
 
 
-;; Huom: Seuraava EI ole häntärekursiivinen funktio, eikä käytä apufunktiota:
-
-(define (luvut-ännästä-yhteen n)
-  (if (zero? n) ;; Jos n tuli nollaksi...
-      (list)    ;; Niin palauta tyhjä lista, mikä sopivasti päättää rakennetun listan.
-;; Muussa tapauksessa laita (tämänhetkinen) luku n sen listan alkuun,
-;; joka saadaan kun tuotetaan lista lukuja n-1 :stä yhteen:
-      (cons n (luvut-ännästä-yhteen (- n 1)))
-  )
-)
-
-(check-expect (luvut-ännästä-yhteen 0) (list))
-(check-expect (luvut-ännästä-yhteen 1) (list 1))
-(check-expect (luvut-ännästä-yhteen 5) (list 5 4 3 2 1))
-
-
-;; Harjoitus: Yritä miettiä ensin testaamatta mitä seuraava funktio tekee:
+;; Väliharjoitus tehtävään kolme: Yritä miettiä ensin testaamatta mitä seuraava funktio tekee:
 
 (define (kaskummaa lista) (kaskummaa-apu lista empty))
 
 (define (kaskummaa-apu lista tulos)
    (if (empty? lista) ;; Kun lista on "syöty loppuun"...
-       tulos          ;; palautetaan tulos
+       tulos          ;; palautetaan tulos.
        ;; Muuten hypätään takaisin alkuun, siten että...
        (kaskummaa-apu (rest lista)  ;;  ... listaa lista "syödään"
-                      (cons (first lista) tulos) ;; mutta listaa tulos "rakennetaan".
+                      (cons (first lista) tulos) ;; mutta listaa tulos "rakennetaan",
+                      ;; siten että listan lista ensimmäinen alkio siirretään listan tulos alkuun.
        )
    )
 )
@@ -104,10 +116,17 @@
 ;; Kokeile sen jälkeen tulkki-ikkunassa vaikkapa (kaskummaa (list 11 22 33))
 ;; Yllätyitkö? Mikä on vastaavan valmisfunktion nimi Racketissa/WeSchemessä?
 
+;; Vastaus: Kyse on tietenkin reverse-funktiosta, joka kääntää listan alkiot takaperin:
+
 (check-expect (kaskummaa (list)) (list))
 
-
 (check-expect (kaskummaa (list 1 2 3)) (list 3 2 1))
+
+(check-expect (kaskummaa (list 1 (list 2 3 4) 5)) (list 5 (list 2 3 4) 1))
+
+;; Tämä listan järjestyksen kääntyminen pitää ottaa huomioon silloin kuin uutta tulos-listaa
+;; kasvatetaan cons-funktiolla, esimerkiksi kääntämällä tulos-lista aivan lopuksi reverse-funktiolla.
+;; (Listan kääntäminen on jonkin verran aikaa vievää, joten se kannattaa tehdä vasta lopuksi.)
 
 
 ;; Tehtävä 3:
@@ -117,17 +136,28 @@
 
 ;; Mikäli ehtoon täsmäävissä luvuissa on toistoa, niin tuloksessakin on toistoa.
 ;; Lisäksi saatujen lukujen pitäisi tulla samassa järjestyksessä kuin ne
-;; ovat annetussa listassakin.
-;; Vihje: Korjaa tuloslistan järjestys vasta myöhemmin.
+;; esiintyvät argumenttina annetussa listassa luvut.
+
+;; Malliratkaisu:
 
 (define (kaikki-suuremmat-kuin n luvut) (kaikki-suuremmat-apu n luvut (list)))
 
 (define (kaikki-suuremmat-apu n luvut tulos)
-   (cond ((empty? luvut) (reverse tulos))
-         ((> (first luvut) n)
-            (kaikki-suuremmat-apu n (rest luvut) (cons (first luvut) tulos))
+   (cond ((empty? luvut)    ;; Jos lista luvut syötiin jo loppuun?
+            (reverse tulos) ;; niin palauta lista tulos, takaisin oikeinpäin käännettynä.
          )
-         (else (kaikki-suuremmat-apu n (rest luvut) tulos))
+         ((> (first luvut) n) ;; Jos listan ensimmäinen alkio (tässä kohdin!) on suurempi kuin n
+            (kaikki-suuremmat-apu  ;; niin "kutsu itseä" eli hyppää funktion alkuun, siten että:
+                      n            ;;   n pidetään samana,
+                      (rest luvut) ;;   ja listan luvut ensimmäinen alkio
+                      (cons (first luvut) tulos) ;; siirretään listan tulos alkuun.
+            )
+         )
+         (else  ;; Muussa tapauksessa palaa alkuun niin että lista luvut lyhenee yhdellä alkiolla,
+                ;; ja muut muuttujat pysyvät samoina (nyt alkiota ei oteta mukaan tulos-listaan, koska
+                ;; se ei ole suurempi kuin n):
+            (kaikki-suuremmat-apu n (rest luvut) tulos)
+         )
    )
 )
 
@@ -145,14 +175,22 @@
 ;; sisältävän listan ja luvun n, ja palauttaa luvun n esiintymien
 ;; lukumäärän listassa.
 
+;; Malliratkaisu:
+
 (define (lukumäärä luvut n) (lukumäärä-apu luvut n 0))
 
 (define (lukumäärä-apu luvut n tulos)
-   (cond ((empty? luvut) tulos)
-         ((= (first luvut) n)
-            (lukumäärä-apu (rest luvut) n (+ 1 tulos))
+   (cond ((empty? luvut) tulos) ;; Jos lista luvut "syöty loppuun", niin palauta tulos.
+         ((= (first luvut) n)   ;; Jos tässä kohdin listan eka alkio on n,
+            (lukumäärä-apu      ;; niin "kutsu itseä" eli hyppää funktion alkuun, siten että:  
+                  (rest luvut)  ;;   lista lyhenee yhdellä (siten että eka alkio jätetään pois)
+                  n             ;;   n pidetään samana,
+                  (+ 1 tulos)   ;;   ja tulos kasvaa yhdellä.
+            )
          )
-         (else (lukumäärä-apu (rest luvut) n tulos))
+         (else ;; Muuten palaa alkuun niin että luvut-lista lyhenee yhdellä ja muuttujat n ja tulos pysyvät samoina.
+            (lukumäärä-apu (rest luvut) n tulos)
+         )
    )
 )
 
@@ -162,8 +200,47 @@
 (check-expect (lukumäärä (list 1 2 2 3 4 4 1 3 5 7 5 5 1 1 4) 212)
               0)
 
-(check-expect (lukumäärä (list) -555) 0)
+(check-expect (lukumäärä (list) -555) 0) ;; Tyhjässä listassa ei ole ainuttakaan lukua, tulos aina nolla.
 
+;;
+;; Malliratkaisu 4b:
+;;
+
+;; Huomataan että ylläolevassa ratkaisussa cond:in toinen ja kolmas ehto tekevät miltei saman asian: ainoa ero on
+;; siinä kasvaako muuttuja tulos yhdellä vai pysyykö samana.
+
+;; Vaihtoehtoisessa ratkaisussa tätä seikkaa on käytetty hyväksi siten, että cond on lyhentynyt yhdellä lausekkeella,
+;; ja testi (= (first luvut) n) on siirretty uuden if-lauseen ehdoksi, joka palauttaa joko ykkösen tai nollan,
+;; mikä sitten lisätään muuttujaan tulos:
+
+(define (lukumäärä2 luvut n) (lukumäärä2-apu luvut n 0))
+
+(define (lukumäärä2-apu luvut n tulos)
+   (cond ((empty? luvut) tulos) ;; Jos lista luvut "syöty loppuun", niin palauta tulos.
+         (else                  ;; Muuten "kutsu itseä" eli hyppää funktion alkuun, siten että:  
+            (lukumäärä2-apu 
+                  (rest luvut)  ;;   lista lyhenee yhdellä
+                  n             ;;   n pidetään samana
+                  (+ tulos      ;;   ja tulos-muuttujaan lisätään,
+                     (if        ;;     riippuen siitä,
+                         (= (first luvut) n)  ;; onko luvut-listan eka alkio (tässä kohdin listaa) sama kuin n vai ei
+                         1                    ;; joko 1
+                         0                    ;; tai 0. (Huom: jos lisätään 0 niin tulos pysyy tietenkin samana).
+                     )
+                  )
+            )
+         )
+   )
+)
+
+
+(check-expect (lukumäärä2 (list 1 2 2 3 4 4 1 3 5 7 5 5 1 1 4) 1)
+              4)
+
+(check-expect (lukumäärä2 (list 1 2 2 3 4 4 1 3 5 7 5 5 1 1 4) 212)
+              0)
+
+(check-expect (lukumäärä2 (list) -555) 0) ;; Tyhjässä listassa ei ole ainuttakaan lukua, tulos aina nolla.
 
 
 
