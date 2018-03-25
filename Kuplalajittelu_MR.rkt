@@ -182,8 +182,8 @@
 ;;  (vector-set! v       i  (vector-ref v (+ 1 i))) 
 ;;  (vector-set! v (+ 1 i)  (vector-ref v i)) 
 ;; koska jälkimmäistä lausetta suoritettaessa v[i]:n päälle on kirjoitettu jo vanha v[i+1]:n arvo, ja v[i]:n vanha arvo on
-;; sen jälkeen jo hukattu. Tämän vuoksi v[i]:n vanha arvo pitää ensin ottaa väliaikaisesti talteen omaan muuttujaansa, tässä
-;; nimeltään tmp (tulee englannin sanasta "temporary").
+;; sen jälkeen hukattu ainiaaksi. Tämän vuoksi v[i]:n vanha arvo pitää ensin ottaa väliaikaisesti talteen omaan muuttujaansa,
+;; tässä nimeltään tmp (tulee englannin sanasta "temporary").
 
 ;; Tärkeänä erona alkuperäiseen listoja käyttävään lajittelukierros -funktioon tässä on myös se,
 ;; että tämä toteutus on täysin häntärekursiivinen. Kun funktio on kutsunut itseään (joko cond-käskyn toisesta
@@ -192,17 +192,7 @@
 ;; (muutoksia), josta ylemmän tason funktio kuplalajittele-v! näkee onko lajittelu saatu vihdoin päätökseen.
 ;;
 
-;;
-;; Funktioiden nimeämisestä: Jos funktio tekee muutoksia annettuihin argumentteihin (siis aiheuttaa sivuvaikutuksia)
-;; niin tapana on lisätä sen nimen loppuun huutomerkki (!). Huutomerkki varoittaa koodin lukijaa siitä, että
-;; funktio ei ole "puhdas", toisin sanoen, paitsi että vaikka se palauttaa (mahdollisesti) jonkin arvon, se saattaa tehdä
-;; sellaisia muutoksia argumentteihinsa, joiden kaikkia seurauksia ei aina tule aivan heti ajatelleeksi. Tästä syystä
-;; sellaisten varusfunktioiden määrää on suuresti rajoitettu Racket:in opetuskielissä, vaikka niitä käyttämällä
-;; voikin usein kirjoittaa tehokkaampaa koodia.
-;; Tässä tapauksessa ylemmän tason funktioista kutsutut funktiot list->vector ja vector->list, jotka aina rakentavat
-;; uuden vektorin tai listan (ja siten siis kopioivat tietoa) estävät mahdollisten sivuvaikutusten leviämisen muualle
-;; koodiin.
-;;
+
 
 (define (lajittelukierros-vektoreilla! v koko i muutoksia)
    (cond [(>= i (- koko 1)) muutoksia] ;; Tultiin vektorin (melkein) loppuun, palauta tällä kierroksella tehtyjen muutosten määrä.
@@ -218,6 +208,47 @@
          [else (lajittelukierros-vektoreilla! v koko (+ 1 i) muutoksia)]
    )
 )
+
+;; Määritellään muuttuja testivektori (kahdeksan alkion yksiulotteinen taulukko),
+;; johon yllämääritelty funktio seuraavaksi tulee tekemään sivuvaikutuksellisia muutoksia:
+
+(define testivektori (vector 5 3 1 6 7 2 4 8))
+
+;; Huomaa kuinka tässä lajittelukierros-vektoreilla! palauttaa varsinaisena tuloksenaan
+;; (paluuarvonaan) 4:n, sillä muutoksia (vaihdoksia) tehdään neljä kappaletta yhden
+;; kierroksen aikana: 5 ja 3 vaihtavat paikkaa, sen jälkeen 5 ja 1, jonka jälkeen 5 ja 6
+;; eivät vaihda paikkaa, mutta 7 ja 2 vaihtavat, samoin kuin 7 ja 4. Yhteensä neljä vaihdosta:
+
+(check-expect (lajittelukierros-vektoreilla! testivektori (vector-length testivektori) 0 0)
+              4)
+
+;; Funktiokutsun varsinainen tarkoitus on kuitenkin ensimmäisenä annettuun vektori-argumenttiin
+;; tehdyt muutokset, ja huomataan että tosiaan, muuttuja testivektori on kutsun jälkeen
+;; muuttunut sisällöltään:
+
+(check-expect testivektori (vector 3 1 5 6 2 4 7 8))
+
+;; Seuraavalla kierroksella 3 ja 1, 6 ja 2 sekä 6 ja 4 vaihtavat paikkoja (yht. 3 muutosta):
+(check-expect (lajittelukierros-vektoreilla! testivektori (vector-length testivektori) 0 0)
+              3)
+
+(check-expect testivektori (vector 1 3 5 2 4 6 7 8)) ;; Ja testivektori on taas muuttunut.
+
+
+;;
+;; Funktioiden nimeämisestä: Jos funktio tekee muutoksia annettuihin argumentteihin (siis aiheuttaa sivuvaikutuksia)
+;; niin tapana on lisätä sen nimen loppuun huutomerkki (! joka on siis osa nimeä). Huutomerkki varoittaa koodin lukijaa
+;; siitä, että funktio ei ole "puhdas", toisin sanoen, paitsi että vaikka se palauttaa (mahdollisesti) jonkin arvon,
+;; se saattaa tehdä sellaisia muutoksia argumentteihinsa, joiden kaikkia seurauksia (kutsuvassa funktiossa, tai sitä vielä
+;; ylemmällä tasolla) ei aina tule ajatelleeksi.
+;;
+;; Tästä syystä sellaisten varusfunktioiden määrää on suuresti rajoitettu Racket:in opetuskielissä,
+;; vaikka niitä käyttämällä voikin usein kirjoittaa tehokkaampaa koodia.
+;;
+;; Tässä tapauksessa ylemmän tason funktiossa kuplalajittele2 kutsutut funktiot list->vector ja vector->list, jotka
+;; aina rakentavat uuden vektorin tai listan (ja siten siis kopioivat tietoa) estävät mahdollisten sivuvaikutusten
+;; leviämisen minnekään kauemmaksi. (Ja siksi emme myöskään lisää kuplalajittele2 funktion nimen perään huutomerkkiä).
+;;
 
 (check-expect (kuplalajittele2 '()) '())
 
