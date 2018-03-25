@@ -13,6 +13,8 @@
 ;; (Creative Commons Nimeä-EiKaupallinen-JaaSamoin 4.0 Kansainvälinen Lisenssi).
 ;;
 
+;; WeScheme-versio löytyy täältä: https://www.wescheme.org/view?publicId=DzxR7QrSz0
+
 ;;
 ;; Seuraavissa tehtävissä harjoitellaan edelleen häntärekursiota.
 ;; Kaikille on ominaista, että varsinainen käyttäjän kutsuma funktio
@@ -132,7 +134,7 @@
 ;; Tehtävä 3:
 ;; Kirjoita rekursiivinen funktio, joka saa argumenttina lukuja
 ;; sisältävän listan ja luvun n, ja palauttaa listan jossa on
-;; vain argumenttina annetun listan ne luvut, jotka ovat >= n.
+;; vain argumenttina annetun listan ne luvut, jotka ovat > n.
 
 ;; Mikäli ehtoon täsmäävissä luvuissa on toistoa, niin tuloksessakin on toistoa.
 ;; Lisäksi saatujen lukujen pitäisi tulla samassa järjestyksessä kuin ne
