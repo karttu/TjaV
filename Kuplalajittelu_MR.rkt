@@ -10,7 +10,7 @@
 ;; (Creative Commons Nimeä-EiKaupallinen-JaaSamoin 4.0 Kansainvälinen Lisenssi).
 ;;
 
-;; WeScheme-versio löytyy osoitteella: https://www.wescheme.org/view?publicId=UJJs9rl4aw
+;; WeScheme-versio (joka on täysin sama) löytyy osoitteella: https://www.wescheme.org/view?publicId=P9i9He2l5G
 
 
 ;; Katso:
@@ -153,7 +153,7 @@
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; Tämä versio haluaa edelleen argumenttinaan listan, ja listan se myös palauttaa. Muunnos vektoriksi ja vektorista takaisin
+;; Tämäkin versio haluaa edelleen argumenttinaan listan, ja listan se myös palauttaa. Muunnos vektoriksi ja vektorista takaisin
 ;; listaksi tehdään funktioilla list->vector ja vector->list:
 
 (define (kuplalajittele2 lista) (vector->list (kuplalajittele-v! (list->vector lista) (length lista))))
@@ -167,10 +167,10 @@
 )
 
 
-;; Funktio lajittelukierros on muuttunut eniten (uusi nimi: lajittelukierros-vektoreilla!).
+;; Aiempaan listaversioon verrattuna funktion lajittelukierros toteutus on muuttunut eniten (uusi nimi: lajittelukierros-vektoreilla!).
 ;; Argumenteikseen se haluaa vektorin v, johon muutokset tehdään, vektorin (eli alunperin annetun listan) koon (koko),
-;; indeksin i, joka alkaa nollasta, ja kasvaa aina koko-1:een asti, ja kullakin kierroksella tehtyjen
-;; muutosten määrän (muutoksia) joka alkaa nollasta.
+;; indeksin i (joka alkaa nollasta, ja kasvaa aina yhtä pienemmäksi kuin muuttujan koko arvo),
+;; sekä neljäntenä argumenttinaan kullakin kierroksella tehtyjen muutosten määrän (nimeltään muutoksia) joka alkaa nollasta.
 
 ;; (begin ... ... ...) muoto kertoo tulkille että sen sisällä tehdään monta asiaa peräkkäin, ja vain viimeisen
 ;; palauttamaa arvoa käytetään. Toisin sanoen kaikki muut kuin viimeinen lauseke tehdään vain niiden sivuvaikutusten
